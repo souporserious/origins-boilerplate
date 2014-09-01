@@ -2,4 +2,4 @@
   
   
   
-})( jQuery );
+})(jQuery);
