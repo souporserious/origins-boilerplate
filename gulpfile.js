@@ -9,7 +9,8 @@ var gulp = require('gulp');
 /**
  * Load Gulp Plugins
  */
-var $ = require('gulp-load-plugins')();
+var $ = require('gulp-load-plugins')(),
+    mainBowerFiles = require('main-bower-files');
 
 
 /**
@@ -88,13 +89,27 @@ gulp.task('images', function() {
  * Build Fonts Folder
  */
 gulp.task('fonts', function() {
-    return $.bowerFiles()
+    return gulp.src('app/fonts/**/*')
         .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
-        .pipe($.flatten())
+        .pipe(gulp.dest(buildFolder + '/fonts'))
+        .pipe($.size());
+});
+gulp.task('fontsBower', function() {
+    return gulp.src(mainBowerFiles())
+        .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
+        .pipe($.flatten()) // grab all font files from all bower componenets
         .pipe(gulp.dest(buildFolder + '/fonts'))
         .pipe($.size());
 });
 
+/**
+ * Pipe videos into build folder
+ */
+gulp.task('videos', function() {
+    return gulp.src('app/videos/**/*')
+        .pipe(gulp.dest(buildFolder + '/videos'))
+        .pipe($.size());
+});
 
 /**
  * Grab Any Files like .htaccess, favicons, etc. and include them
@@ -109,14 +124,14 @@ gulp.task('extras', function() {
  * Clean Up Empty Files &/or Folders
  */
 gulp.task('clean', function() {
-    return gulp.src(['.tmp', buildFolder], { read: false }).pipe($.clean());
+    return gulp.src(['.tmp', buildFolder], { read: false }).pipe($.rimraf());
 });
 
 
 /**
  * Build Deliverable
  */
-gulp.task('build', ['html', 'images', 'fonts', 'extras']);
+gulp.task('build', ['html', 'images', 'fonts', 'fontsBower', 'videos', 'extras']);
 
 gulp.task('default', ['clean'], function() {
     gulp.start('build');
