@@ -7,7 +7,8 @@
     "respond": "~1.4.2",
     "bourbon": "~4.0.2",
     "neat": "~1.6.0",
-    "bitters": "~0.10.0"
+    "bitters": "~0.10.0",
+    "sass-meyer-reset": "*"
   },
   "devDependencies": {}
 }
