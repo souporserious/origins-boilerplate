@@ -2,7 +2,7 @@
  * Transitions
  * thanks to http://bit.ly/1lVmPmu
  ******************/
- 
+
 @function prefix($property, $prefixes: (webkit moz o ms)) {
     $vendor-prefixed-properties: transform background-clip background-size;
     $result: ();
