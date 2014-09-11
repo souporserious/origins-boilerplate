@@ -25,13 +25,19 @@ var buildFolder = 'dist',
  * Build Styles
  */
 gulp.task('styles', function() {
-    
+    var processors = [
+      require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
+      require('pixrem')
+    ];
+
     return gulp.src('app/styles/main.scss')
           .pipe($.rubySass({
               style: 'expanded',
               precision: 10
           }))
-          .pipe($.autoprefixer('last 1 version'))
+          .pipe($.sourcemaps.init())
+          .pipe($.postcss(processors))
+          .pipe($.sourcemaps.write())
           .pipe(gulp.dest('.tmp/styles'))
           .pipe($.size());
 });
@@ -165,6 +171,7 @@ gulp.task('serve', ['connect', 'styles'], function() {
  * Inject Bower Components
  */
 gulp.task('wiredep', function () {
+    
     var wiredep = require('wiredep').stream;
 
     gulp.src('app/styles/*.scss')
@@ -185,6 +192,7 @@ gulp.task('wiredep', function () {
  * Start "Watching" Files
  */
 gulp.task('watch', ['connect', 'serve'], function () {
+    
     var server = $.livereload();
 
     // watch for changes
