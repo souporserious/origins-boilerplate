@@ -18,22 +18,19 @@ var $ = require('gulp-load-plugins')(),
  */
 var buildFolder = 'dist',
     liveReloadPort = 35729,
-    serverPort = 9000;
+    serverPort = 9000,
+    onError = function(error) {
+      $.notify.onError({
+        title:    'Error',
+        message:  '<%= error.message %>'   
+      })(error);
+    };
 
 
 /**
  * Build Styles
  */
 gulp.task('styles', function() {
-    
-    var onError = function(err) {
-      $.notify.onError({
-        title:    'Error',
-        subtitle: 'Sass was unable to compile!',
-        message:  '<%= error.message %>'   
-      })(err);
-      this.emit('end');
-    };
 
     var processors = [
       require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
