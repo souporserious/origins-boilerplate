@@ -64,6 +64,7 @@ gulp.task('html', ['styles', 'scripts'], function() {
     return gulp.src('app/*.html')
           .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
           .pipe(jsFilter)
+          .pipe($.stripDebug())
           .pipe($.uglify())
           .pipe(jsFilter.restore())
           .pipe(cssFilter)
@@ -100,6 +101,7 @@ gulp.task('fonts', function() {
         .pipe(gulp.dest(buildFolder + '/fonts'))
         .pipe($.size());
 });
+
 gulp.task('fontsBower', function() {
     return gulp.src(mainBowerFiles())
         .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
@@ -107,6 +109,7 @@ gulp.task('fontsBower', function() {
         .pipe(gulp.dest(buildFolder + '/fonts'))
         .pipe($.size());
 });
+
 
 /**
  * Pipe videos into build folder
@@ -116,6 +119,7 @@ gulp.task('videos', function() {
         .pipe(gulp.dest(buildFolder + '/videos'))
         .pipe($.size());
 });
+
 
 /**
  * Grab Any Files like .htaccess, favicons, etc. and include them
