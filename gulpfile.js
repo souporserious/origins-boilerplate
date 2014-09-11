@@ -18,13 +18,7 @@ var $ = require('gulp-load-plugins')(),
  */
 var buildFolder = 'dist',
     liveReloadPort = 35729,
-    serverPort = 9000,
-    onError = function(error) {
-      $.notify.onError({
-        title:    'Error',
-        message:  '<%= error.message %>'   
-      })(error);
-    };
+    serverPort = 9000;
 
 
 /**
@@ -33,9 +27,15 @@ var buildFolder = 'dist',
 gulp.task('styles', function() {
 
     var processors = [
-      require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
-      require('pixrem')
-    ];
+          require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
+          require('pixrem')
+        ],
+        onError = function(err) {
+          $.notify.onError({
+            title:    'Sass Error',
+            message:  '<%= err.message %>'   
+          })(err);
+        };
 
     return gulp.src('app/styles/main.scss')
           .pipe($.plumber({errorHandler: onError}))
@@ -67,19 +67,32 @@ gulp.task('scripts', function() {
 gulp.task('html', ['styles', 'scripts'], function() {
     
     var jsFilter = $.filter('**/*.js'),
-        cssFilter = $.filter('**/*.css');
+        cssFilter = $.filter('**/*.css'),
+        onError = function (err) {
+          console.error(err);
+        };
 
     return gulp.src('app/*.html')
+          .pipe($.plumber({
+            errorHandler: onError
+          }))
           .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
+          
+          // strip debug info and minify javascript
           .pipe(jsFilter)
           .pipe($.stripDebug())
           .pipe($.uglify())
           .pipe(jsFilter.restore())
+          
+          // minify and compile sass files
           .pipe(cssFilter)
           .pipe($.csso())
           .pipe(cssFilter.restore())
+          
+          // concatenate respective files together
           .pipe($.useref.restore())
           .pipe($.useref())
+          
           .pipe(gulp.dest(buildFolder))
           .pipe($.size());
 });
