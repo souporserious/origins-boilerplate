@@ -25,12 +25,23 @@ var buildFolder = 'dist',
  * Build Styles
  */
 gulp.task('styles', function() {
+    
+    var onError = function(err) {
+      $.notify.onError({
+        title:    'Error',
+        subtitle: 'Sass was unable to compile!',
+        message:  '<%= error.message %>'   
+      })(err);
+      this.emit('end');
+    };
+
     var processors = [
       require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
       require('pixrem')
     ];
 
     return gulp.src('app/styles/main.scss')
+          .pipe($.plumber({errorHandler: onError}))
           .pipe($.rubySass({
               style: 'expanded',
               precision: 10
