@@ -1,11 +1,13 @@
 {
-  "name": "origins",
+  "name": "getac-25-years",
   "private": true,
   "dependencies": {
     "modernizr": "~2.6.2",
     "jquery": "~1.11.0",
-    "bootstrap-sass-official": "~3.1.1",
-    "respond": "~1.4.2"
+    "respond": "~1.4.2",
+    "bourbon": "~4.0.2",
+    "neat": "~1.6.0",
+    "bitters": "~0.10.0"
   },
   "devDependencies": {}
 }

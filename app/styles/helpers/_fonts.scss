@@ -1,0 +1,54 @@
+/******************
+ * Font Stack
+ ******************/
+// TODO: add 'null' checks like described here: http://bit.ly/1xMwuBd
+//
+// $font-faces: (
+//   'Helvetica-Neue': 'helveticaneue',
+//   'Helvetica-Neue-Medium': ('helveticaneue-medium-webfont', 500),
+//   'Avant-Garde-Black': ('itcavantgardestd-bk-webfont', 700),
+// );
+// .test-block {
+//   @extend %Helvetica-Neue;
+// }
+
+$font-faces: (
+
+);
+
+$font-path: '../fonts/';
+
+// font family mixin
+@mixin font($font, $style: normal, $weight: normal) {
+  font-family: $font, Helvetica, Arial, sans-serif;
+  font-style:  $style;
+  font-weight: $weight;
+}
+
+@each $font-face-name, $font-face in $font-faces {
+  
+  $font-weight: 'normal';
+  $font-style: 'normal';
+  
+  // check if we are passing a list
+  @if (type-of($font-face) == list) {
+    $font-weight: nth($font-face, 2);
+    $font-style: if(length($font-face) == 3, nth($font-face, 3), 'normal');
+  }
+  
+  // generate all font faces using their appropriate weights & styles
+  @font-face {
+    font-family: $font-face-name; 
+    font-weight: $font-weight;
+    font-style: $font-style;
+    src: url('#{$font-path}#{nth($font-face, 1)}.eot');
+    src: url('#{$font-path}#{nth($font-face, 1)}.eot?') format('eot'),
+         url('#{$font-path}#{nth($font-face, 1)}.woff') format('woff'),
+         url('#{$font-path}#{nth($font-face, 1)}.ttf')  format('truetype');
+  }
+  
+  // generate placeholders so we can extend when we need to use a font
+  %#{$font-face-name} {
+    @include font($font-face-name, $font-style, $font-weight);
+  }
+}
