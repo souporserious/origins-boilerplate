@@ -1,0 +1,63 @@
+/******************
+ * Font Stack
+ ******************/
+// Usage:
+// ( CSS-FRIENDLY-NAME, URL-FRIENDLY-NAME, FONT-WEIGHT, FONT-STYLE )
+// ** make sure to not use spaces in any of the names **
+//
+// $font-faces: (
+//   ('Helvetica-Neue', 'helveticaneue', 800),
+//   ('Helvetica-Neue-Bold', 'helveticaneue-bold-webfont', 700),
+//   ('Helvetica-Neue-Italic', 'helveticaneue-italic-webfont', 500, 'italic'),
+// );
+//
+// Creates a nice placeholder you can now use to extend from :)
+// .test-block {
+//   @extend %Helvetica-Neue;
+// }
+//
+// TODO: add 'null' checks like described here: http://bit.ly/1xMwuBd
+
+$font-faces: (
+);
+$font-path: '../fonts/';
+
+// font family mixin
+@mixin font($font, $style: normal, $weight: normal) {
+  font-family: $font, Helvetica, Arial, sans-serif;
+  font-style:  $style;
+  font-weight: $weight;
+}
+
+@each $font-face in $font-faces {
+  
+  $font-css-name: nth($font-face, 1);
+  $font-url-name: nth($font-face, 2);
+  
+  $font-weight: 'normal';
+  $font-style: 'normal';
+  
+  // check if we need to change the weight or style
+  @if (length($font-face) > 2) {
+    $font-weight: nth($font-face, 3);
+  }
+  @if (length($font-face) > 3) {
+    $font-style: nth($font-face, 4);
+  }
+  
+  // generate all font faces using their appropriate weights & styles
+  @font-face {
+    font-family: $font-css-name;
+    font-weight: $font-weight;
+    font-style: $font-style;
+    src: url('#{$font-path}#{$font-url-name}.eot');
+    src: url('#{$font-path}#{$font-url-name}.eot?') format('eot'),
+         url('#{$font-path}#{$font-url-name}.woff') format('woff'),
+         url('#{$font-path}#{$font-url-name}.ttf')  format('truetype');
+  }
+  
+  // generate placeholders so we can extend when we need to use a font
+  %#{$font-css-name} {
+    @include font($font-css-name, $font-style, $font-weight);
+  }
+}

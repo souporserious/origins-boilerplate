@@ -2,10 +2,20 @@
   "name": "origins",
   "private": true,
   "dependencies": {
-    "modernizr": "~2.6.2",
     "jquery": "~1.11.0",
-    "bootstrap-sass-official": "~3.1.1",
-    "respond": "~1.4.2"
+    "jquery-mousewheel": "~3.1.12",
+    "modernizr": "~2.6.2",
+    "respond": "~1.4.2",
+    "bourbon": "~3.1.8",
+    "neat": "~1.5.1",
+    "bitters": "~0.10.0",
+    "sass-list-maps": "~0.9.9",
+    "sass-meyer-reset": "*",
+    "requestAnimationFrame": "~0.0.22",
+    "ScrollMagic": "~1.1.2",
+    "jquery.backgroundSize": "*",
+    "velocity": "~1.1.0",
+    "selectivizr": "~1.0.2"
   },
   "devDependencies": {}
 }

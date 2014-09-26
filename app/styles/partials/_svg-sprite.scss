@@ -1,0 +1,23 @@
+.icon {
+    font-size: 10px;
+}
+
+.icon:before {
+    content:' ';
+    vertical-align:middle;
+    display: inline-block;
+    background-image: url("../svgs/sprite.svg");
+    background-repeat: no-repeat;
+    background-size: 0em 0em;
+}
+
+.no-svg .icon:before {
+    background-image: url("../svgs/sprite.png");
+}
+
+.sprite:before {
+    background-position: 0em 0em;
+    width: 0em;
+    height: 0em;
+}
+

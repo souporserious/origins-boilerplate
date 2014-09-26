@@ -18,7 +18,13 @@ var $ = require('gulp-load-plugins')(),
  */
 var buildFolder = 'dist',
     liveReloadPort = 35729,
-    serverPort = 9000;
+    serverPort = 9000,
+    onError = function(error) {
+      $.notify.onError({
+        title:    'Error',
+        message:  '<%= error.message %>'   
+      })(error);
+    };
 
 
 /**
@@ -27,21 +33,18 @@ var buildFolder = 'dist',
 gulp.task('styles', function() {
 
     var processors = [
-          require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
-          require('pixrem')
-        ],
-        onError = function(err) {
-          $.notify.onError({
-            title:    'Sass Error',
-            message:  '<%= err.message %>'   
-          })(err);
-        };
+      require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
+      require('pixrem')
+    ];
 
     return gulp.src('app/styles/main.scss')
+          .pipe($.changed('.tmp/styles'))
           .pipe($.plumber({errorHandler: onError}))
-          .pipe($.rubySass({
-              style: 'expanded',
-              precision: 10
+          .pipe($.sass({
+              //style: 'expanded',
+              precision: 10,
+              includePaths: ['app/bower_components/']
+              //loadPath: ['app/bower_components/']
           }))
           .pipe($.sourcemaps.init())
           .pipe($.postcss(processors))
@@ -62,37 +65,49 @@ gulp.task('scripts', function() {
 
 
 /**
+ * Compile SVG's into a sprite sheet with PNG fallback
+ */
+gulp.task('svgs', function () {
+
+    return gulp.src('app/svgs/*.svg')
+        .pipe($.svgSprites({
+            cssFile: '../app/styles/partials/_svg-sprite.scss',
+            preview: false,
+            svg: {
+                sprite: 'svgs/sprite.svg'
+            }
+        }))
+        .pipe(gulp.dest(buildFolder)) // Write the sprite-sheet + SCSS
+        .pipe(gulp.dest('app'))
+        .pipe($.filter('**/*.svg'))   // Filter out everything except the SVG file
+        .pipe($.svg2png())            // Create a PNG fallback
+        .pipe(gulp.dest(buildFolder))
+        .pipe(gulp.dest('app'));
+});
+
+
+/**
  * Put It All Together
  */
-gulp.task('html', ['styles', 'scripts'], function() {
+gulp.task('html', ['styles', 'scripts', 'svgs'], function() {
     
-    var jsFilter = $.filter('**/*.js'),
-        cssFilter = $.filter('**/*.css'),
-        onError = function (err) {
-          console.error(err);
-        };
+    var cssFilter = $.filter('**/*.css'),
+        jsFilter = $.filter('**/*.js');
 
     return gulp.src('app/*.html')
-          .pipe($.plumber({
-            errorHandler: onError
-          }))
           .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
-          
-          // strip debug info and minify javascript
           .pipe(jsFilter)
           .pipe($.stripDebug())
           .pipe($.uglify())
           .pipe(jsFilter.restore())
-          
-          // minify and compile sass files
           .pipe(cssFilter)
+          .pipe($.uncss({
+            html: [buildFolder + '/index.html']
+          }))
           .pipe($.csso())
           .pipe(cssFilter.restore())
-          
-          // concatenate respective files together
           .pipe($.useref.restore())
           .pipe($.useref())
-          
           .pipe(gulp.dest(buildFolder))
           .pipe($.size());
 });
@@ -103,11 +118,11 @@ gulp.task('html', ['styles', 'scripts'], function() {
  */
 gulp.task('images', function() {
     return gulp.src('app/images/**/*')
-        .pipe($.cache($.imagemin({
+        .pipe($.imagemin({
             optimizationLevel: 3,
             progressive: true,
             interlaced: true
-        })))
+        }))
         .pipe(gulp.dest(buildFolder + '/images'))
         .pipe($.size());
 });
@@ -162,10 +177,8 @@ gulp.task('clean', function() {
 /**
  * Build Deliverable
  */
-gulp.task('build', ['html', 'images', 'fonts', 'fontsBower', 'videos', 'extras']);
-
-gulp.task('default', ['clean'], function() {
-    gulp.start('build');
+gulp.task('build', ['clean'], function() {
+    gulp.start(['html', 'images', 'fonts', 'fontsBower', 'videos', 'extras']);
 });
 
 
@@ -173,8 +186,8 @@ gulp.task('default', ['clean'], function() {
  * Start LiveReload Server
  */
 gulp.task('connect', function() {
-    var connect = require('connect');
-    var app = connect()
+    var connect = require('connect'),
+        app = connect()
         .use(require('connect-livereload')({ port: liveReloadPort }))
         .use(connect.static('app'))
         .use(connect.static('.tmp'))
