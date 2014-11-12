@@ -47,4 +47,13 @@ main {
 
 ////////////////////////////////
 // Modules
-// @import "modules/";
+@import "modules/modal";
+
+
+////////////////////////////////
+// General
+.fixed {
+    position: fixed;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
