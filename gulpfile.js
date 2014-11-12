@@ -9,15 +9,13 @@ var gulp = require('gulp');
 /**
  * Load Gulp Plugins
  */
-var $ = require('gulp-load-plugins')(),
-    mainBowerFiles = require('main-bower-files');
+var $ = require('gulp-load-plugins')();
 
 
 /**
  *  Globals Vars
  */
 var buildFolder = 'dist',
-    liveReloadPort = 35729,
     serverPort = 9000,
     onError = function(error) {
       $.notify.onError({
@@ -41,10 +39,8 @@ gulp.task('styles', function() {
           .pipe($.changed('.tmp/styles'))
           .pipe($.plumber({errorHandler: onError}))
           .pipe($.sass({
-              //style: 'expanded',
               precision: 10,
               includePaths: ['app/bower_components/']
-              //loadPath: ['app/bower_components/']
           }))
           .pipe($.sourcemaps.init())
           .pipe($.postcss(processors))
@@ -58,58 +54,35 @@ gulp.task('styles', function() {
  * Build Scripts
  */
 gulp.task('scripts', function() {
-    
     return gulp.src('app/scripts/**/*.js')
           .pipe($.size());
 });
 
 
 /**
- * Compile SVG's into a sprite sheet with PNG fallback
- */
-gulp.task('svgs', function () {
-
-    return gulp.src('app/svgs/*.svg')
-        .pipe($.svgSprites({
-            cssFile: '../app/styles/partials/_svg-sprite.scss',
-            preview: false,
-            svg: {
-                sprite: 'svgs/sprite.svg'
-            }
-        }))
-        .pipe(gulp.dest(buildFolder)) // Write the sprite-sheet + SCSS
-        .pipe(gulp.dest('app'))
-        .pipe($.filter('**/*.svg'))   // Filter out everything except the SVG file
-        .pipe($.svg2png())            // Create a PNG fallback
-        .pipe(gulp.dest(buildFolder))
-        .pipe(gulp.dest('app'));
-});
-
-
-/**
  * Put It All Together
  */
-gulp.task('html', ['styles', 'scripts', 'svgs'], function() {
+gulp.task('html', ['styles', 'scripts'], function() {
     
     var cssFilter = $.filter('**/*.css'),
-        jsFilter = $.filter('**/*.js');
+        jsFilter  = $.filter('**/*.js');
 
     return gulp.src('app/*.html')
-          .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
-          .pipe(jsFilter)
-          .pipe($.stripDebug())
-          .pipe($.uglify())
-          .pipe(jsFilter.restore())
-          .pipe(cssFilter)
-          .pipe($.uncss({
-            html: [buildFolder + '/index.html']
-          }))
-          .pipe($.csso())
-          .pipe(cssFilter.restore())
-          .pipe($.useref.restore())
-          .pipe($.useref())
-          .pipe(gulp.dest(buildFolder))
-          .pipe($.size());
+           .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
+           .pipe(jsFilter)
+           .pipe($.stripDebug())
+           .pipe($.uglify())
+           .pipe(jsFilter.restore())
+           .pipe(cssFilter)
+           .pipe($.uncss({
+               html: [buildFolder + '/index.html']
+           }))
+           .pipe($.csso())
+           .pipe(cssFilter.restore())
+           .pipe($.useref.restore())
+           .pipe($.useref())
+           .pipe(gulp.dest(buildFolder))
+           .pipe($.size());
 });
 
 
@@ -121,7 +94,7 @@ gulp.task('images', function() {
         .pipe($.imagemin({
             optimizationLevel: 3,
             progressive: true,
-            interlaced: true
+            interlaced: false
         }))
         .pipe(gulp.dest(buildFolder + '/images'))
         .pipe($.size());
@@ -139,6 +112,9 @@ gulp.task('fonts', function() {
 });
 
 gulp.task('fontsBower', function() {
+    
+    var mainBowerFiles = require('main-bower-files');
+
     return gulp.src(mainBowerFiles())
         .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
         .pipe($.flatten()) // grab all font files from all bower componenets
@@ -167,10 +143,13 @@ gulp.task('extras', function() {
 
 
 /**
- * Clean Up Empty Files &/or Folders
+ * Rebuild ".tmp" & "Build" folders
  */
-gulp.task('clean', function() {
-    return gulp.src(['.tmp', buildFolder], { read: false }).pipe($.rimraf());
+gulp.task('clean', function(cb) {
+
+    var del = require('del');
+
+    del(['.tmp', buildFolder], cb);
 });
 
 
@@ -186,18 +165,12 @@ gulp.task('build', ['clean'], function() {
  * Start LiveReload Server
  */
 gulp.task('connect', function() {
-    var connect = require('connect'),
-        app = connect()
-        .use(require('connect-livereload')({ port: liveReloadPort }))
-        .use(connect.static('app'))
-        .use(connect.static('.tmp'))
-        .use(connect.directory('app'));
 
-    require('http').createServer(app)
-        .listen(serverPort)
-        .on('listening', function () {
-            console.log('Started connect web server on http://localhost:' + serverPort);
-        });
+    $.connect.server({
+        root: 'app',
+        port: serverPort,
+        livereload: true
+    });
 });
 
 gulp.task('serve', ['connect', 'styles'], function() {
@@ -229,20 +202,17 @@ gulp.task('wiredep', function () {
 /**
  * Start "Watching" Files
  */
-gulp.task('watch', ['connect', 'serve'], function () {
+gulp.task('default', ['connect', 'serve'], function () {
     
-    var server = $.livereload();
+    //var server = $.livereload();
 
     // watch for changes
-
     gulp.watch([
         'app/*.html',
         '.tmp/styles/**/*.css',
         'app/scripts/**/*.js',
         'app/images/**/*'
-    ]).on('change', function (file) {
-        server.changed(file.path);
-    });
+    ]);
 
     gulp.watch('app/styles/**/*.scss', ['styles']);
     gulp.watch('app/scripts/**/*.js', ['scripts']);
