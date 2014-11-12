@@ -18,10 +18,10 @@ var $ = require('gulp-load-plugins')();
 var buildFolder = 'dist',
     serverPort = 9000,
     onError = function(error) {
-      $.notify.onError({
-        title:    'Error',
-        message:  '<%= error.message %>'   
-      })(error);
+        $.notify.onError({
+            title:    'Error',
+            message:  '<%= error.message %>'   
+        })(error);
     };
 
 
@@ -31,20 +31,20 @@ var buildFolder = 'dist',
 gulp.task('styles', function() {
 
     var processors = [
-      require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
-      require('pixrem')
+        require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
+        require('pixrem')
     ];
 
     return gulp.src('app/styles/main.scss')
           .pipe($.changed('.tmp/styles'))
           .pipe($.plumber({errorHandler: onError}))
+          //.pipe($.sourcemaps.init())
           .pipe($.sass({
               precision: 10,
               includePaths: ['app/bower_components/']
           }))
-          .pipe($.sourcemaps.init())
           .pipe($.postcss(processors))
-          .pipe($.sourcemaps.write())
+          //.pipe($.sourcemaps.write())
           .pipe(gulp.dest('.tmp/styles'))
           .pipe($.size());
 });
@@ -166,11 +166,18 @@ gulp.task('build', ['clean'], function() {
  */
 gulp.task('connect', function() {
 
-    $.connect.server({
-        root: 'app',
-        port: serverPort,
-        livereload: true
-    });
+    var connect = require('connect'),
+        app = connect()
+        .use(require('connect-livereload')({ port: 35729 }))
+        .use(connect.static('app'))
+        .use(connect.static('.tmp'))
+        .use(connect.directory('app'));
+
+    require('http').createServer(app)
+        .listen(serverPort)
+        .on('listening', function () {
+            console.log('Started connect web server on http://localhost:' + serverPort);
+        });
 });
 
 gulp.task('serve', ['connect', 'styles'], function() {
@@ -207,12 +214,17 @@ gulp.task('default', ['connect', 'serve'], function () {
     //var server = $.livereload();
 
     // watch for changes
+    var server = $.livereload();
+
+    // watch for changes
     gulp.watch([
         'app/*.html',
         '.tmp/styles/**/*.css',
         'app/scripts/**/*.js',
         'app/images/**/*'
-    ]);
+    ]).on('change', function (file) {
+        server.changed(file.path);
+    });
 
     gulp.watch('app/styles/**/*.scss', ['styles']);
     gulp.watch('app/scripts/**/*.js', ['scripts']);

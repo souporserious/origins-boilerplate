@@ -2,6 +2,7 @@
 // Variables
 @import "variables";
 
+
 ////////////////////////////////
 // So we can use lists with libsass
 @import "sass-list-maps/sass-list-maps";
@@ -10,6 +11,10 @@
 ////////////////////////////////
 // CSS Reset
 @import "sass-meyer-reset/sass-meyer-reset";
+
+main {
+    display:block;
+}
 
 
 ////////////////////////////////
@@ -26,6 +31,12 @@
 
 
 ////////////////////////////////
+// Components
+@import "components/buttons";
+@import "components/select-box";
+
+
+////////////////////////////////
 // Partials
 @import "partials/typography";
 @import "partials/header";
@@ -33,6 +44,7 @@
 @import "partials/share";
 @import "partials/navigation";
 
-.test {
-    color: red;
-}
+
+////////////////////////////////
+// Modules
+// @import "modules/";
