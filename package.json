@@ -38,6 +38,7 @@
     "main-bower-files": "^2.0.0",
     "opn": "^0.1.1",
     "pixrem": "^0.1.4",
+    "portfinder": "^0.2.1",
     "wiredep": "^1.4.3"
   },
   "engines": {

@@ -16,7 +16,7 @@ var $ = require('gulp-load-plugins')();
  *  Globals Vars
  */
 var buildFolder = 'dist',
-    serverPort = 9000,
+    serverPort,
     onError = function(error) {
         $.notify.onError({
             title:    'Error',
@@ -28,7 +28,7 @@ var buildFolder = 'dist',
 /**
  * Build Styles
  */
-gulp.task('styles', function() {
+gulp.task('styles', function () {
 
     var processors = [
         require('autoprefixer')({browsers:['last 2 versions', 'ie >= 9']}),
@@ -53,7 +53,7 @@ gulp.task('styles', function() {
 /**
  * Build Scripts
  */
-gulp.task('scripts', function() {
+gulp.task('scripts', function () {
     return gulp.src('app/scripts/**/*.js')
           .pipe($.size());
 });
@@ -62,7 +62,7 @@ gulp.task('scripts', function() {
 /**
  * Put It All Together
  */
-gulp.task('html', ['styles', 'scripts'], function() {
+gulp.task('html', ['styles', 'scripts'], function () {
     
     var cssFilter = $.filter('**/*.css'),
         jsFilter  = $.filter('**/*.js');
@@ -89,7 +89,7 @@ gulp.task('html', ['styles', 'scripts'], function() {
 /**
  * Optimize Images
  */
-gulp.task('images', function() {
+gulp.task('images', function () {
     return gulp.src('app/images/**/*')
         .pipe($.imagemin({
             optimizationLevel: 3,
@@ -104,14 +104,14 @@ gulp.task('images', function() {
 /**
  * Build Fonts Folder
  */
-gulp.task('fonts', function() {
+gulp.task('fonts', function () {
     return gulp.src('app/fonts/**/*')
         .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
         .pipe(gulp.dest(buildFolder + '/fonts'))
         .pipe($.size());
 });
 
-gulp.task('fontsBower', function() {
+gulp.task('fontsBower', function () {
     
     var mainBowerFiles = require('main-bower-files');
 
@@ -126,7 +126,7 @@ gulp.task('fontsBower', function() {
 /**
  * Pipe videos into build folder
  */
-gulp.task('videos', function() {
+gulp.task('videos', function () {
     return gulp.src('app/videos/**/*')
         .pipe(gulp.dest(buildFolder + '/videos'))
         .pipe($.size());
@@ -136,7 +136,7 @@ gulp.task('videos', function() {
 /**
  * Grab Any Files like .htaccess, favicons, etc. and include them
  */
-gulp.task('extras', function() {
+gulp.task('extras', function () {
     return gulp.src(['app/*.*', '!app/*.html'], { dot: true })
         .pipe(gulp.dest(buildFolder));
 });
@@ -145,7 +145,7 @@ gulp.task('extras', function() {
 /**
  * Rebuild ".tmp" & "Build" folders
  */
-gulp.task('clean', function(cb) {
+gulp.task('clean', function (cb) {
 
     var del = require('del');
 
@@ -156,7 +156,7 @@ gulp.task('clean', function(cb) {
 /**
  * Build Deliverable
  */
-gulp.task('build', ['clean'], function() {
+gulp.task('build', ['clean'], function () {
     gulp.start(['html', 'images', 'fonts', 'fontsBower', 'videos', 'extras']);
 });
 
@@ -164,23 +164,29 @@ gulp.task('build', ['clean'], function() {
 /**
  * Start LiveReload Server
  */
-gulp.task('connect', function() {
+gulp.task('connect', function () {
 
-    var connect = require('connect'),
+    var portfinder = require('portfinder'),
+        connect = require('connect'),
         app = connect()
         .use(require('connect-livereload')({ port: 35729 }))
         .use(connect.static('app'))
         .use(connect.static('.tmp'))
         .use(connect.directory('app'));
 
-    require('http').createServer(app)
-        .listen(serverPort)
-        .on('listening', function () {
-            console.log('Started connect web server on http://localhost:' + serverPort);
-        });
+    portfinder.getPort(function (err, port) { 
+        
+        serverPort = port;
+
+        require('http').createServer(app)
+            .listen(port)
+            .on('listening', function () {
+                console.log('Started connect web server on http://localhost:' + port);
+            });
+    });
 });
 
-gulp.task('serve', ['connect', 'styles'], function() {
+gulp.task('serve', ['connect', 'styles'], function () {
     require('opn')('http://localhost:' + serverPort);
 });
 
